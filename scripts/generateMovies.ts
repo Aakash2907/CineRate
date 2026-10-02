@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-interface MovieSeed {
+export interface MovieSeed {
   id: number;
   title: string;
   description: string;
@@ -55,6 +55,330 @@ const backdrops = [
   'https://images.unsplash.com/photo-1491555103944-7c647fd857e6?q=80&w=1600&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1600&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600&auto=format&fit=crop',
+];
+
+// Iconic famous films requested by user
+const famousMasterpieces: Omit<MovieSeed, 'id'>[] = [
+  {
+    title: 'Fight Club',
+    description: 'An insomniac office worker and an enigmatic, anarchic soap salesman build a clandestine underground fight club that rapidly metastasizes into an unexpected, radical anti-consumerist revolution.',
+    release_year: 1999,
+    genre: 'Drama',
+    language: 'English',
+    duration: '2h 19m',
+    director: 'David Fincher',
+    cast_members: 'Brad Pitt, Edward Norton, Helena Bonham Carter, Meat Loaf, Jared Leto',
+    poster_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=qtRKdVHc-cE',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 3200,
+  },
+  {
+    title: 'Oppenheimer',
+    description: 'The sweeping, intimate chronicle of J. Robert Oppenheimer, the brilliant theoretical physicist who led the Manhattan Project to invent the atomic bomb, and the moral fallout that reshaped humanity.',
+    release_year: 2023,
+    genre: 'Drama',
+    language: 'English',
+    duration: '3h 00m',
+    director: 'Christopher Nolan',
+    cast_members: 'Cillian Murphy, Emily Blunt, Matt Damon, Robert Downey Jr., Florence Pugh',
+    poster_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1507499739999-097706ad8914?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=uYPbbksJxIg',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 2950,
+  },
+  {
+    title: '2001: A Space Odyssey',
+    description: 'An awe-inspiring masterpiece exploring human evolution, alien monoliths, and a voyage to Jupiter governed by HAL 9000, an increasingly erratic sentient supercomputer.',
+    release_year: 1968,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 29m',
+    director: 'Stanley Kubrick',
+    cast_members: 'Keir Dullea, Gary Lockwood, William Sylvester, Douglas Rain',
+    poster_url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=oR_e9y-bka0',
+    featured: true,
+    average_rating: 4.8,
+    rating_count: 2600,
+  },
+  {
+    title: 'Interstellar',
+    description: 'When Earth faces atmospheric collapse, a courageous team of astronauts embarks through a wormhole near Saturn in search of a new home for the human species.',
+    release_year: 2014,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 49m',
+    director: 'Christopher Nolan',
+    cast_members: 'Matthew McConaughey, Anne Hathaway, Jessica Chastain, Michael Caine, Timothée Chalamet',
+    poster_url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=zSWdZVtXT7E',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 3400,
+  },
+  {
+    title: 'Inception',
+    description: 'A skilled thief who steals corporate secrets through dream-sharing technology is offered an impossible task: plant an original idea into the subconscious mind of a CEO heir.',
+    release_year: 2010,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 28m',
+    director: 'Christopher Nolan',
+    cast_members: 'Leonardo DiCaprio, Joseph Gordon-Levitt, Elliot Page, Tom Hardy, Ken Watanabe',
+    poster_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=YoHD9XEInc0',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 3100,
+  },
+  {
+    title: 'The Dark Knight',
+    description: 'When the menacing Joker emerges to plunge Gotham into chaos and anarchy, Batman must confront one of the greatest psychological and physical challenges of his life.',
+    release_year: 2008,
+    genre: 'Action',
+    language: 'English',
+    duration: '2h 32m',
+    director: 'Christopher Nolan',
+    cast_members: 'Christian Bale, Heath Ledger, Aaron Eckhart, Michael Caine, Maggie Gyllenhaal',
+    poster_url: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=EXeTwQWrcwY',
+    featured: true,
+    average_rating: 5.0,
+    rating_count: 3800,
+  },
+  {
+    title: 'Pulp Fiction',
+    description: 'The lives of two Los Angeles mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.',
+    release_year: 1994,
+    genre: 'Crime',
+    language: 'English',
+    duration: '2h 34m',
+    director: 'Quentin Tarantino',
+    cast_members: 'John Travolta, Samuel L. Jackson, Uma Thurman, Bruce Willis, Ving Rhames',
+    poster_url: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=s7EdQ4FqbhY',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 2900,
+  },
+  {
+    title: 'The Shawshank Redemption',
+    description: 'Over the course of several decades, two imprisoned men find solace and eventual redemption through acts of common decency and quiet resilience.',
+    release_year: 1994,
+    genre: 'Drama',
+    language: 'English',
+    duration: '2h 22m',
+    director: 'Frank Darabont',
+    cast_members: 'Tim Robbins, Morgan Freeman, Bob Gunton, William Sadler, Clancy Brown',
+    poster_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=6hB3S9bIaco',
+    featured: true,
+    average_rating: 5.0,
+    rating_count: 4200,
+  },
+  {
+    title: 'The Godfather',
+    description: 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant youngest son.',
+    release_year: 1972,
+    genre: 'Crime',
+    language: 'English',
+    duration: '2h 55m',
+    director: 'Francis Ford Coppola',
+    cast_members: 'Marlon Brando, Al Pacino, James Caan, Robert Duvall, Diane Keaton',
+    poster_url: 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=sY1S34973zA',
+    featured: true,
+    average_rating: 5.0,
+    rating_count: 3600,
+  },
+  {
+    title: 'Parasite',
+    description: 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.',
+    release_year: 2019,
+    genre: 'Thriller',
+    language: 'Korean',
+    duration: '2h 12m',
+    director: 'Bong Joon-ho',
+    cast_members: 'Song Kang-ho, Lee Sun-kyun, Cho Yeo-jeong, Choi Woo-shik, Park So-dam',
+    poster_url: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=5xH0Hf13u5g',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 2700,
+  },
+  {
+    title: 'The Matrix',
+    description: 'When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth: his life is an elaborate deception of an evil cyber-intelligence.',
+    release_year: 1999,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 16m',
+    director: 'Lana & Lilly Wachowski',
+    cast_members: 'Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss, Hugo Weaving, Joe Pantoliano',
+    poster_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=vKQi3bBA1y8',
+    featured: true,
+    average_rating: 4.8,
+    rating_count: 3100,
+  },
+  {
+    title: 'Dune: Part Two',
+    description: 'Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family in an epic galactic uprising.',
+    release_year: 2024,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 46m',
+    director: 'Denis Villeneuve',
+    cast_members: 'Timothée Chalamet, Zendaya, Rebecca Ferguson, Javier Bardem, Austin Butler',
+    poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=Way9Dexny3w',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 2400,
+  },
+  {
+    title: 'Whiplash',
+    description: 'A promising young drummer enrolls at a cut-throat music conservatory where his dreams of greatness are mentored by an instructor who will stop at nothing to realize a student potential.',
+    release_year: 2014,
+    genre: 'Drama',
+    language: 'English',
+    duration: '1h 46m',
+    director: 'Damien Chazelle',
+    cast_members: 'Miles Teller, J.K. Simmons, Paul Reiser, Melissa Benoist',
+    poster_url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=7d_jQycdQGo',
+    featured: false,
+    average_rating: 4.8,
+    rating_count: 2100,
+  },
+  {
+    title: 'Blade Runner 2049',
+    description: 'Young Blade Runner K discovery of a long-buried secret leads him to track down former Blade Runner Rick Deckard, who has been missing for thirty years.',
+    release_year: 2017,
+    genre: 'Sci-Fi',
+    language: 'English',
+    duration: '2h 44m',
+    director: 'Denis Villeneuve',
+    cast_members: 'Ryan Gosling, Harrison Ford, Ana de Armas, Sylvia Hoeks, Robin Wright',
+    poster_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=gCcx85zbxz4',
+    featured: true,
+    average_rating: 4.8,
+    rating_count: 2300,
+  },
+  {
+    title: 'Gladiator',
+    description: 'A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family and sent him into slavery.',
+    release_year: 2000,
+    genre: 'Action',
+    language: 'English',
+    duration: '2h 35m',
+    director: 'Ridley Scott',
+    cast_members: 'Russell Crowe, Joaquin Phoenix, Connie Nielsen, Oliver Reed, Richard Harris',
+    poster_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=owK1qxDselE',
+    featured: true,
+    average_rating: 4.8,
+    rating_count: 2500,
+  },
+  {
+    title: 'Se7en',
+    description: 'Two detectives, a rookie and a veteran, hunt a serial killer who uses the seven deadly sins as his motives.',
+    release_year: 1995,
+    genre: 'Crime',
+    language: 'English',
+    duration: '2h 07m',
+    director: 'David Fincher',
+    cast_members: 'Brad Pitt, Morgan Freeman, Gwyneth Paltrow, Kevin Spacey',
+    poster_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=znmZoVkCjpI',
+    featured: false,
+    average_rating: 4.8,
+    rating_count: 2200,
+  },
+  {
+    title: 'Forrest Gump',
+    description: 'The history of the United States from the 1950s to the 70s unfolds from the perspective of an Alabama man with an IQ of 75, who yearns to be reunited with his childhood sweetheart.',
+    release_year: 1994,
+    genre: 'Drama',
+    language: 'English',
+    duration: '2h 22m',
+    director: 'Robert Zemeckis',
+    cast_members: 'Tom Hanks, Robin Wright, Gary Sinise, Sally Field',
+    poster_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=bLvqoHBptjg',
+    featured: false,
+    average_rating: 4.8,
+    rating_count: 2800,
+  },
+  {
+    title: 'Goodfellas',
+    description: 'The story of Henry Hill and his life in the mafia, covering his relationship with his wife Karen and his mob partners Jimmy Conway and Tommy DeVito.',
+    release_year: 1990,
+    genre: 'Crime',
+    language: 'English',
+    duration: '2h 25m',
+    director: 'Martin Scorsese',
+    cast_members: 'Robert De Niro, Ray Liotta, Joe Pesci, Lorraine Bracco, Paul Sorvino',
+    poster_url: 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=2ilzidi_J8Q',
+    featured: false,
+    average_rating: 4.8,
+    rating_count: 2100,
+  },
+  {
+    title: 'Spirited Away',
+    description: 'During her family move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits, where humans are changed into beasts.',
+    release_year: 2001,
+    genre: 'Animation',
+    language: 'Japanese',
+    duration: '2h 05m',
+    director: 'Hayao Miyazaki',
+    cast_members: 'Rumi Hiiragi, Miyu Irino, Mari Natsuki, Takashi Naito',
+    poster_url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=ByXuk9QqQkk',
+    featured: true,
+    average_rating: 4.9,
+    rating_count: 2600,
+  },
+  {
+    title: 'The Silence of the Lambs',
+    description: 'A young F.B.I. cadet must receive the help of an incarcerated and manipulative cannibal killer to help catch another serial killer, a madman who skins his victims.',
+    release_year: 1991,
+    genre: 'Thriller',
+    language: 'English',
+    duration: '1h 58m',
+    director: 'Jonathan Demme',
+    cast_members: 'Jodie Foster, Anthony Hopkins, Lawrence A. Bonney, Kasi Lemmons',
+    poster_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop',
+    backdrop_url: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=1600&auto=format&fit=crop',
+    trailer_url: 'https://www.youtube.com/watch?v=W6Mm8Sbe__o',
+    featured: false,
+    average_rating: 4.8,
+    rating_count: 2200,
+  },
 ];
 
 const genres = [
@@ -117,225 +441,22 @@ export function generate1000Movies(): MovieSeed[] {
   const movies: MovieSeed[] = [];
   const usedTitles = new Set<string>();
 
-  // Add the initial 12 handcrafted movies first
-  const handcrafted: MovieSeed[] = [
-    {
-      id: 1,
-      title: 'Interstellar Odyssey',
-      description: 'A team of pioneering astrophysicists and deep-space explorers travel through a newly opened cosmic wormhole in search of a viable planetary sanctuary for endangered humanity.',
-      release_year: 2024,
-      genre: 'Sci-Fi',
-      language: 'English',
-      duration: '2h 49m',
-      director: 'Christopher Sterling',
-      cast_members: 'Matthew McConaughey, Anne Hathaway, Jessica Chastain, Michael Caine',
-      poster_url: posters[0],
-      backdrop_url: backdrops[0],
-      trailer_url: 'https://www.youtube.com/watch?v=zSWdZVtXT7E',
-      featured: true,
-      average_rating: 4.8,
-      rating_count: 1420,
-    },
-    {
-      id: 2,
-      title: 'Neon Horizon: 2088',
-      description: 'In a rain-soaked cyberpunk metropolis controlled by synthetic intelligence syndicates, an augmented detective uncovers an existential conspiracy linking corporate titans to human memory erasure.',
-      release_year: 2025,
-      genre: 'Sci-Fi',
-      language: 'English',
-      duration: '2h 14m',
-      director: 'Denis Villeneuve',
-      cast_members: 'Ryan Gosling, Ana de Armas, Harrison Ford, Sylvia Hoeks',
-      poster_url: posters[1],
-      backdrop_url: backdrops[1],
-      trailer_url: 'https://www.youtube.com/watch?v=gCcx85zbxz4',
-      featured: true,
-      average_rating: 4.7,
-      rating_count: 980,
-    },
-    {
-      id: 3,
-      title: 'The Kyoto Echo',
-      description: 'An intimate drama unfolding in the historic alleyways of Kyoto, exploring three generations of traditional tea masters grappling with contemporary societal changes.',
-      release_year: 2024,
-      genre: 'Drama',
-      language: 'Japanese',
-      duration: '1h 56m',
-      director: 'Hirokazu Kore-eda',
-      cast_members: 'Koji Yakusho, Sakura Ando, Lily Franky, Mayu Matsuoka',
-      poster_url: posters[2],
-      backdrop_url: backdrops[2],
-      trailer_url: 'https://www.youtube.com/watch?v=1F3hm6MfR1k',
-      featured: false,
-      average_rating: 4.9,
-      rating_count: 730,
-    },
-    {
-      id: 4,
-      title: 'Shadows in the Mist',
-      description: 'A veteran alpine search-and-rescue specialist investigates a string of inexplicable disappearances across the treacherous Pyrenees mountain range during a blizzard.',
-      release_year: 2023,
-      genre: 'Thriller',
-      language: 'French',
-      duration: '2h 08m',
-      director: 'Justine Triet',
-      cast_members: 'Sandra Hüller, Swann Arlaud, Milo Machado-Graner, Antoine Reinartz',
-      poster_url: posters[3],
-      backdrop_url: backdrops[3],
-      trailer_url: 'https://www.youtube.com/watch?v=fTr7h7kQpB8',
-      featured: false,
-      average_rating: 4.4,
-      rating_count: 512,
-    },
-    {
-      id: 5,
-      title: 'Chronicles of Eldoria',
-      description: 'When ancient elemental seals shatter beneath the forgotten ruins of Eldoria, an exiled cartographer must unite fractured rival kingdoms before eternal darkness descends.',
-      release_year: 2025,
-      genre: 'Fantasy',
-      language: 'English',
-      duration: '2h 38m',
-      director: 'Guillermo del Toro',
-      cast_members: 'Dev Patel, Florence Pugh, Mads Mikkelsen, Cate Blanchett',
-      poster_url: posters[4],
-      backdrop_url: backdrops[4],
-      trailer_url: 'https://www.youtube.com/watch?v=d9MyW72ELq0',
-      featured: true,
-      average_rating: 4.6,
-      rating_count: 890,
-    },
-    {
-      id: 6,
-      title: 'Midnight in Madrid',
-      description: 'A whirlwind romance ignites between an art restorer on the run and an enigmatic flamenco guitarist as they navigate a high-stakes museum heist across Spain.',
-      release_year: 2024,
-      genre: 'Romance',
-      language: 'Spanish',
-      duration: '1h 48m',
-      director: 'Pedro Almodóvar',
-      cast_members: 'Penélope Cruz, Antonio Banderas, Javier Bardem, Blanca Suárez',
-      poster_url: posters[5],
-      backdrop_url: backdrops[5],
-      trailer_url: 'https://www.youtube.com/watch?v=Yrz3B8hZ9Zk',
-      featured: false,
-      average_rating: 4.3,
-      rating_count: 420,
-    },
-    {
-      id: 7,
-      title: 'Seoul Velocity',
-      description: 'An elite undercover traffic investigator infiltrates the perilous underground electric street racing syndicate operating in the neon highways of futuristic Seoul.',
-      release_year: 2025,
-      genre: 'Action',
-      language: 'Korean',
-      duration: '2h 05m',
-      director: 'Bong Joon-ho',
-      cast_members: 'Song Kang-ho, Park So-dam, Choi Woo-shik, Lee Sun-kyun',
-      poster_url: posters[6],
-      backdrop_url: backdrops[6],
-      trailer_url: 'https://www.youtube.com/watch?v=5xH0Hf13u5g',
-      featured: false,
-      average_rating: 4.6,
-      rating_count: 670,
-    },
-    {
-      id: 8,
-      title: 'The Symphony of Silence',
-      description: 'Based on an extraordinary true story of a visionary conductor who loses his hearing during the peak of the 1920s jazz revolution and invents a new sensory form of musical notation.',
-      release_year: 2023,
-      genre: 'Drama',
-      language: 'English',
-      duration: '2h 21m',
-      director: 'Damien Chazelle',
-      cast_members: 'Bradley Cooper, Carey Mulligan, Matt Bomer, Maya Hawke',
-      poster_url: posters[7],
-      backdrop_url: backdrops[7],
-      trailer_url: 'https://www.youtube.com/watch?v=ga1m0456Vb4',
-      featured: false,
-      average_rating: 4.7,
-      rating_count: 810,
-    },
-    {
-      id: 9,
-      title: 'Quantum Labyrinth',
-      description: 'A rogue theoretical physicist discovers that every time she makes a conscious decision, her laboratory splits into divergent timelines that threaten to collapse the fabric of spacetime.',
-      release_year: 2026,
-      genre: 'Mystery',
-      language: 'English',
-      duration: '2h 17m',
-      director: 'Alex Garland',
-      cast_members: 'Natalie Portman, Oscar Isaac, Tessa Thompson, Jennifer Jason Leigh',
-      poster_url: posters[8],
-      backdrop_url: backdrops[8],
-      trailer_url: 'https://www.youtube.com/watch?v=89OP78l9W1k',
-      featured: false,
-      average_rating: 4.5,
-      rating_count: 390,
-    },
-    {
-      id: 10,
-      title: 'The Alpine Heist',
-      description: 'A crew of international master lockpicks attempts an impossible extraction from an impenetrable vault carved into the heart of a Swiss glacier during an avalanche.',
-      release_year: 2024,
-      genre: 'Action',
-      language: 'German',
-      duration: '2h 02m',
-      director: 'Edward Berger',
-      cast_members: 'Daniel Brühl, Sebastian Koch, Paula Beer, Albrecht Schuch',
-      poster_url: posters[9],
-      backdrop_url: backdrops[9],
-      trailer_url: 'https://www.youtube.com/watch?v=W6N8l293eX0',
-      featured: false,
-      average_rating: 4.4,
-      rating_count: 480,
-    },
-    {
-      id: 11,
-      title: 'Whispers in the Stacks',
-      description: 'In a sprawling Victorian archive, a meticulous conservator discovers encoded watermarks in rare medieval manuscripts that foretell historic global cataclysms.',
-      release_year: 2023,
-      genre: 'Mystery',
-      language: 'English',
-      duration: '1h 58m',
-      director: 'Kenneth Branagh',
-      cast_members: 'Kenneth Branagh, Emma Thompson, Colin Firth, Judi Dench',
-      poster_url: posters[10],
-      backdrop_url: backdrops[10],
-      trailer_url: 'https://www.youtube.com/watch?v=qM79_itR0Nc',
-      featured: false,
-      average_rating: 4.2,
-      rating_count: 340,
-    },
-    {
-      id: 12,
-      title: 'The Last Canopy',
-      description: 'A courageous botanical expedition deep in the uncharted Amazon basin uncovers a sentient bioluminescent biome that holds the cure to a worldwide atmospheric degradation.',
-      release_year: 2025,
-      genre: 'Adventure',
-      language: 'Spanish',
-      duration: '2h 11m',
-      director: 'Alejandro G. Iñárritu',
-      cast_members: 'Gael García Bernal, Salma Hayek, Diego Luna, Wagner Moura',
-      poster_url: posters[11],
-      backdrop_url: backdrops[11],
-      trailer_url: 'https://www.youtube.com/watch?v=73_1biulkYk',
-      featured: false,
-      average_rating: 4.5,
-      rating_count: 560,
-    },
-  ];
+  let idCounter = 1;
 
-  for (const m of handcrafted) {
-    movies.push(m);
-    usedTitles.add(m.title);
+  // Add all famous masterpieces first
+  for (const m of famousMasterpieces) {
+    movies.push({
+      ...m,
+      id: idCounter++,
+    });
+    usedTitles.add(m.title.toLowerCase());
   }
 
-  let nextId = 13;
   let adjIndex = 0;
   let nounIndex = 0;
 
-  // Generate up to 1,020 movies
-  while (movies.length < 1020) {
+  // Generate up to 1,025 movies
+  while (movies.length < 1025) {
     const adj = adjectives[adjIndex % adjectives.length];
     const noun = nouns[nounIndex % nouns.length];
     const variation = Math.floor(movies.length / (adjectives.length * nouns.length));
@@ -365,41 +486,37 @@ export function generate1000Movies(): MovieSeed[] {
       nounIndex++;
     }
 
-    if (usedTitles.has(title)) {
-      title += ` ${nextId}`;
+    if (usedTitles.has(title.toLowerCase())) {
+      title += ` ${idCounter}`;
     }
-    usedTitles.add(title);
+    usedTitles.add(title.toLowerCase());
 
-    const genre = genres[nextId % genres.length];
-    const language = languages[nextId % languages.length];
-    const director = directors[nextId % directors.length];
+    const genre = genres[idCounter % genres.length];
+    const language = languages[idCounter % languages.length];
+    const director = directors[idCounter % directors.length];
 
-    // Pick 3-4 cast members
-    const c1 = castPool[nextId % castPool.length];
-    const c2 = castPool[(nextId + 3) % castPool.length];
-    const c3 = castPool[(nextId + 7) % castPool.length];
+    const c1 = castPool[idCounter % castPool.length];
+    const c2 = castPool[(idCounter + 3) % castPool.length];
+    const c3 = castPool[(idCounter + 7) % castPool.length];
     const cast = `${c1}, ${c2}, ${c3}`;
 
-    // Release year between 1970 and 2026
-    const yearBase = 1970 + ((nextId * 7) % 57);
+    const yearBase = 1970 + ((idCounter * 7) % 57);
     const release_year = Math.min(2026, Math.max(1975, yearBase));
 
-    // Runtime between 1h 35m and 2h 55m
-    const hours = 1 + ((nextId % 2) === 1 ? 1 : 0);
-    const mins = 15 + ((nextId * 13) % 45);
+    const hours = 1 + ((idCounter % 2) === 1 ? 1 : 0);
+    const mins = 15 + ((idCounter * 13) % 45);
     const duration = `${hours}h ${mins.toString().padStart(2, '0')}m`;
 
-    const poster = posters[nextId % posters.length];
-    const backdrop = backdrops[nextId % backdrops.length];
-    const storyTemplate = storylineTemplates[nextId % storylineTemplates.length];
+    const poster = posters[idCounter % posters.length];
+    const backdrop = backdrops[idCounter % backdrops.length];
+    const storyTemplate = storylineTemplates[idCounter % storylineTemplates.length];
     const desc = `${title} is a ${genre.toLowerCase()} tour-de-force set in ${release_year}. ${storyTemplate}`;
 
-    // Rating between 3.6 and 4.9
-    const avgRating = Number((3.6 + ((nextId * 17) % 14) / 10).toFixed(1));
-    const ratingCount = 80 + ((nextId * 53) % 1800);
+    const avgRating = Number((3.6 + ((idCounter * 17) % 14) / 10).toFixed(1));
+    const ratingCount = 80 + ((idCounter * 53) % 1800);
 
     movies.push({
-      id: nextId,
+      id: idCounter,
       title,
       description: desc,
       release_year,
@@ -411,12 +528,12 @@ export function generate1000Movies(): MovieSeed[] {
       poster_url: poster,
       backdrop_url: backdrop,
       trailer_url: 'https://www.youtube.com/watch?v=zSWdZVtXT7E',
-      featured: (nextId % 40 === 0),
+      featured: (idCounter % 40 === 0),
       average_rating: avgRating,
       rating_count: ratingCount,
     });
 
-    nextId++;
+    idCounter++;
   }
 
   return movies;
@@ -424,7 +541,7 @@ export function generate1000Movies(): MovieSeed[] {
 
 // Generate and write file
 const allMovies = generate1000Movies();
-console.log(`Generated ${allMovies.length} movies!`);
+console.log(`Generated ${allMovies.length} movies with famous masterpieces!`);
 
 const outputData = `// Auto-generated 1,000+ CineRate catalog dataset
 export interface MovieSeed {
