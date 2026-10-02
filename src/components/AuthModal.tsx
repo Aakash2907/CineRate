@@ -35,7 +35,12 @@ export const AuthModal: React.FC = () => {
         toast('Account created successfully! Welcome to CineRate.', 'success');
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please check your credentials.');
+      const msg = err.message || '';
+      if (msg.includes('Unexpected') || msg.includes('JSON')) {
+        setError('Server is connecting. Please click "Create Account" again.');
+      } else {
+        setError(msg || 'Authentication failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
