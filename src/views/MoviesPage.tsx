@@ -31,6 +31,8 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 24;
 
   // Filter States
   const [search, setSearch] = useState<string>(initialFilter?.search || '');
@@ -46,6 +48,7 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
+      setCurrentPage(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [search]);
@@ -55,6 +58,7 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
     if (initialFilter?.search !== undefined) setSearch(initialFilter.search);
     if (initialFilter?.genre !== undefined) setGenre(initialFilter.genre);
     if (initialFilter?.sort !== undefined) setSort(initialFilter.sort);
+    setCurrentPage(1);
   }, [initialFilter]);
 
   const fetchMovies = async () => {
@@ -67,7 +71,8 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
         year: year !== 'all' ? year : undefined,
         minRating: minRating > 0 ? minRating : undefined,
         sort,
-        limit: 100,
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
       });
       setMovies(data.movies);
       setTotalCount(data.total);
@@ -80,7 +85,7 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
 
   useEffect(() => {
     fetchMovies();
-  }, [debouncedSearch, genre, language, year, minRating, sort]);
+  }, [debouncedSearch, genre, language, year, minRating, sort, currentPage]);
 
   const resetFilters = () => {
     setSearch('');
@@ -89,6 +94,7 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
     setYear('all');
     setMinRating(0);
     setSort('popular');
+    setCurrentPage(1);
   };
 
   const hasActiveFilters =
@@ -440,6 +446,74 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalCount > pageSize && (
+        <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-400">
+            Showing <strong className="text-white">{Math.min(totalCount, (currentPage - 1) * pageSize + 1)}</strong> to{' '}
+            <strong className="text-white">{Math.min(totalCount, currentPage * pageSize)}</strong> of{' '}
+            <strong className="text-amber-400">{totalCount.toLocaleString()}</strong> movies
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                setCurrentPage((p) => Math.max(1, p - 1));
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+              }}
+              disabled={currentPage === 1}
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:pointer-events-none transition-all"
+            >
+              &larr; Prev
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: Math.min(5, Math.ceil(totalCount / pageSize)) }).map((_, i) => {
+              const totalPages = Math.ceil(totalCount / pageSize);
+              let pageNum = currentPage;
+              if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              if (pageNum < 1 || pageNum > totalPages) return null;
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => {
+                    setCurrentPage(pageNum);
+                    window.scrollTo({ top: 200, behavior: 'smooth' });
+                  }}
+                  className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${
+                    currentPage === pageNum
+                      ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                      : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => {
+                const totalPages = Math.ceil(totalCount / pageSize);
+                setCurrentPage((p) => Math.min(totalPages, p + 1));
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+              }}
+              disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:pointer-events-none transition-all"
+            >
+              Next &rarr;
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
+import { MOVIES_DATASET } from '../data/moviesData.ts';
 
 export interface User {
   id: number;
@@ -422,7 +423,11 @@ const initialWatchlist: WatchlistEntry[] = [
 
 // Initialize local store with cloned copies
 localStore.users = JSON.parse(JSON.stringify(initialUsers));
-localStore.movies = JSON.parse(JSON.stringify(initialMovies));
+localStore.movies = MOVIES_DATASET.map((m) => ({
+  ...m,
+  created_at: new Date(2024, 0, 1 + (m.id % 300)).toISOString(),
+}));
+localStore.nextIds.movies = 1100;
 localStore.ratings = JSON.parse(JSON.stringify(initialRatings));
 localStore.reviews = JSON.parse(JSON.stringify(initialReviews));
 localStore.watchlist = JSON.parse(JSON.stringify(initialWatchlist));
