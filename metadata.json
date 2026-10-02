@@ -1,0 +1,6 @@
+{
+  "name": "CineRate – Movie Information & Rating Portal",
+  "description": "Discover movies, read detailed information, rate movies, write reviews, maintain personal watchlists, and manage movie catalogs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
