@@ -27,7 +27,10 @@ function AppContent() {
       setMovieFilters(data || {});
       setCurrentView('movies');
     } else if (view === 'movie-details') {
-      setSelectedMovieId(data.movieId);
+      const id = typeof data === 'object' && data !== null 
+        ? Number(data.movieId ?? data.id ?? 1) 
+        : Number(data || 1);
+      setSelectedMovieId(isNaN(id) ? 1 : id);
       setCurrentView('movie-details');
     } else if (view === 'top-rated') {
       setMovieFilters({ sort: 'rating' });
@@ -37,8 +40,9 @@ function AppContent() {
     }
   };
 
-  const handleSelectMovie = (id: number) => {
-    setSelectedMovieId(id);
+  const handleSelectMovie = (id: number | string) => {
+    const numId = Number(id);
+    setSelectedMovieId(isNaN(numId) ? 1 : numId);
     setCurrentView('movie-details');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

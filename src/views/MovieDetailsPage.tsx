@@ -63,10 +63,14 @@ export const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({
       setLoading(true);
       setError(null);
       const data = await api.movies.get(movieId);
+      if (!data || !data.movie) {
+        setError('Movie details could not be found.');
+        return;
+      }
       setMovie(data.movie);
-      setReviews(data.reviews);
-      setInWatchlist(Boolean(data.movie.in_watchlist));
-      if (data.movie.user_rating) {
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+      setInWatchlist(Boolean(data.movie?.in_watchlist));
+      if (data.movie?.user_rating) {
         setUserRating(data.movie.user_rating);
       }
     } catch (err: any) {

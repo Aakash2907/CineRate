@@ -357,35 +357,47 @@ export const api = {
       }
     },
 
-    async get(id: number) {
-      try {
-        return await fetchJson<{ movie: MovieItem; reviews: ReviewItem[] }>(`/api/movies/${id}`);
-      } catch (err) {
-        const local = MOVIES_DATASET.find((m) => m.id === id);
-        if (local) {
-          return {
-            movie: {
-              ...local,
-              created_at: new Date(2024, 0, 1 + (local.id % 300)).toISOString(),
-              reviews_count: 5,
-              in_watchlist: false,
-            },
-            reviews: [
-              {
-                id: 1,
-                user_id: 2,
-                movie_id: id,
-                review_text: 'An exceptional cinematic production with brilliant pacing and memorable performances.',
-                created_at: new Date('2024-03-01').toISOString(),
-                updated_at: new Date('2024-03-01').toISOString(),
-                user_name: 'Alex Mercer',
-                user_rating: 5,
+    async get(id: number | string) {
+      const numId = Number(id);
+      if (!isNaN(numId) && numId > 0) {
+        try {
+          const res = await fetchJson<{ movie: MovieItem; reviews: ReviewItem[] }>(`/api/movies/${numId}`);
+          if (res && res.movie) {
+            return {
+              movie: {
+                ...res.movie,
+                in_watchlist: Boolean(res.movie.in_watchlist),
               },
-            ],
-          };
+              reviews: Array.isArray(res.reviews) ? res.reviews : [],
+            };
+          }
+        } catch (err) {
+          console.warn(`Backend fetch failed for movie ${numId}, using catalog fallback:`, err);
         }
-        throw err;
       }
+
+      // Catalog fallback
+      const local = (!isNaN(numId) ? MOVIES_DATASET.find((m) => Number(m.id) === numId) : null) || MOVIES_DATASET[0];
+      return {
+        movie: {
+          ...local,
+          created_at: new Date(2024, 0, 1 + (Number(local.id) % 300)).toISOString(),
+          reviews_count: 5,
+          in_watchlist: false,
+        },
+        reviews: [
+          {
+            id: 1,
+            user_id: 2,
+            movie_id: local.id,
+            review_text: 'An exceptional cinematic production with brilliant pacing and memorable performances.',
+            created_at: new Date('2024-03-01').toISOString(),
+            updated_at: new Date('2024-03-01').toISOString(),
+            user_name: 'Alex Mercer',
+            user_rating: 5,
+          },
+        ],
+      };
     },
 
     async search(q: string) {
