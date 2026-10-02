@@ -218,7 +218,7 @@ export const api = {
 
         const url = `/api/movies${query.toString() ? `?${query.toString()}` : ''}`;
         const res = await fetchJson<{ movies: MovieItem[]; total: number }>(url);
-        if (res && res.movies && res.movies.length > 0) {
+        if (res && Array.isArray(res.movies)) {
           return res;
         }
         return getLocalMovies(params);

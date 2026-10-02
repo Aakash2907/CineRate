@@ -17,7 +17,7 @@ import { Film, Heart, Shield, Star, Sparkles, Compass } from 'lucide-react';
 function AppContent() {
   const [currentView, setCurrentView] = useState<string>('home');
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
-  const [movieFilters, setMovieFilters] = useState<{ search?: string; genre?: string; sort?: string }>({});
+  const [movieFilters, setMovieFilters] = useState<{ search?: string; genre?: string; language?: string; sort?: string }>({});
   const [activeTrailerMovie, setActiveTrailerMovie] = useState<MovieItem | null>(null);
 
   const handleNavigate = (view: string, data?: any) => {

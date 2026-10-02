@@ -139,6 +139,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onSearc
             Discover
           </button>
           <button
+            onClick={() => onNavigate('movies', { language: 'Tamil' })}
+            className="px-3.5 py-2 rounded-xl text-sm font-medium transition-all text-slate-300 hover:text-amber-400 hover:bg-slate-800/50 flex items-center gap-1.5"
+          >
+            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+            Tamil Cinema
+          </button>
+          <button
             onClick={() => onNavigate('genres')}
             className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
               currentView === 'genres'
@@ -419,6 +426,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onSearc
               className="p-3 rounded-xl bg-slate-900 text-left font-medium text-sm text-slate-200"
             >
               Discover
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigate('movies', { language: 'Tamil' });
+              }}
+              className="p-3 rounded-xl bg-orange-950/30 border border-orange-500/30 text-left font-medium text-sm text-orange-200"
+            >
+              Tamil Cinema (100+)
             </button>
             <button
               onClick={() => {

@@ -427,7 +427,7 @@ localStore.movies = MOVIES_DATASET.map((m) => ({
   ...m,
   created_at: new Date(2024, 0, 1 + (m.id % 300)).toISOString(),
 }));
-localStore.nextIds.movies = 1100;
+localStore.nextIds.movies = 2500;
 localStore.ratings = JSON.parse(JSON.stringify(initialRatings));
 localStore.reviews = JSON.parse(JSON.stringify(initialReviews));
 localStore.watchlist = JSON.parse(JSON.stringify(initialWatchlist));
@@ -540,11 +540,11 @@ export async function initDb(): Promise<void> {
               [u.id, u.name, u.email, u.password_hash, u.role, u.created_at]
             );
           }
-          for (const m of initialMovies) {
+          for (const m of MOVIES_DATASET) {
             await client.query(
               `INSERT INTO movies (id, title, description, release_year, genre, language, duration, director, cast_members, poster_url, backdrop_url, trailer_url, featured, created_at)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT (id) DO NOTHING`,
-              [m.id, m.title, m.description, m.release_year, m.genre, m.language, m.duration, m.director, m.cast_members, m.poster_url, m.backdrop_url, m.trailer_url, m.featured, m.created_at]
+              [m.id, m.title, m.description, m.release_year, m.genre, m.language, m.duration, m.director, m.cast_members, m.poster_url, m.backdrop_url, m.trailer_url, m.featured, new Date('2024-01-01').toISOString()]
             );
           }
           for (const r of initialRatings) {
@@ -582,8 +582,13 @@ export async function initDb(): Promise<void> {
 function attachMovieStats(movie: Movie, currentUserId?: number): Movie {
   const ratings = localStore.ratings.filter((r) => r.movie_id === movie.id);
   const reviews = localStore.reviews.filter((r) => r.movie_id === movie.id);
-  const ratingCount = ratings.length;
-  const avgRating = ratingCount > 0 ? Number((ratings.reduce((sum, r) => sum + r.rating, 0) / ratingCount).toFixed(1)) : 0;
+  
+  const baseRating = (movie as any).average_rating || 4.6;
+  const baseCount = (movie as any).rating_count || 120;
+  const totalCount = baseCount + ratings.length;
+  const avgRating = ratings.length > 0
+    ? Number(((baseRating * baseCount + ratings.reduce((sum, r) => sum + r.rating, 0)) / totalCount).toFixed(1))
+    : baseRating;
   
   let inWatchlist = false;
   let userRating: number | undefined = undefined;
@@ -599,7 +604,7 @@ function attachMovieStats(movie: Movie, currentUserId?: number): Movie {
   return {
     ...movie,
     average_rating: avgRating,
-    rating_count: ratingCount,
+    rating_count: totalCount,
     reviews_count: reviews.length,
     in_watchlist: inWatchlist,
     user_rating: userRating,

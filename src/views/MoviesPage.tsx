@@ -121,6 +121,11 @@ export const MoviesPage: React.FC<MoviesPageProps> = ({
 
   const languagesList = [
     { label: 'All Languages', value: 'all' },
+    { label: 'Tamil', value: 'Tamil' },
+    { label: 'Hindi', value: 'Hindi' },
+    { label: 'Telugu', value: 'Telugu' },
+    { label: 'Malayalam', value: 'Malayalam' },
+    { label: 'Kannada', value: 'Kannada' },
     { label: 'English', value: 'English' },
     { label: 'Japanese', value: 'Japanese' },
     { label: 'French', value: 'French' },

@@ -35,6 +35,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [popularMovies, setPopularMovies] = useState<MovieItem[]>([]);
   const [topRatedMovies, setTopRatedMovies] = useState<MovieItem[]>([]);
   const [recentMovies, setRecentMovies] = useState<MovieItem[]>([]);
+  const [tamilMovies, setTamilMovies] = useState<MovieItem[]>([]);
   const [activeHeroIndex, setActiveHeroIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [homeSearchInput, setHomeSearchInput] = useState<string>('');
@@ -42,11 +43,12 @@ export const HomePage: React.FC<HomePageProps> = ({
   const loadData = async () => {
     try {
       setLoading(true);
-      const [featRes, popRes, topRes, recRes] = await Promise.all([
+      const [featRes, popRes, topRes, recRes, tamRes] = await Promise.all([
         api.movies.list({ featured: true, limit: 5 }),
         api.movies.list({ sort: 'popular', limit: 8 }),
         api.movies.list({ sort: 'rating', limit: 8 }),
         api.movies.list({ sort: 'newest', limit: 8 }),
+        api.movies.list({ language: 'Tamil', limit: 8 }),
       ]);
 
       const feats = featRes.movies.length > 0 ? featRes.movies : popRes.movies.slice(0, 3);
@@ -54,6 +56,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       setPopularMovies(popRes.movies);
       setTopRatedMovies(topRes.movies);
       setRecentMovies(recRes.movies);
+      setTamilMovies(tamRes.movies);
     } catch (err) {
       console.error('Failed to load homepage data:', err);
     } finally {
@@ -391,6 +394,43 @@ export const HomePage: React.FC<HomePageProps> = ({
           ))}
         </div>
       </section>
+
+      {/* ========================================================
+          TAMIL & INDIAN CINEMA SECTION
+      ======================================================== */}
+      {tamilMovies.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/15 text-orange-400 flex items-center justify-center font-bold">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-white">Tamil & Indian Cinema</h2>
+                <p className="text-xs text-slate-400">Discover 100+ celebrated Tamil hits, Pan-Indian blockbusters, and classics</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('movies', { language: 'Tamil' })}
+              className="flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <span>Explore 100+ Tamil Films</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+            {tamilMovies.map((movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onSelect={onSelectMovie}
+                onPlayTrailer={onPlayTrailer}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ========================================================
           RECENTLY ADDED MOVIES SECTION
