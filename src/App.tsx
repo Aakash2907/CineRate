@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider } from './context/AuthContext.tsx';
 import { ToastProvider } from './context/ToastContext.tsx';
+import { ThemeProvider, useTheme } from './context/ThemeContext.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { AuthModal } from './components/AuthModal.tsx';
 import { TrailerModal } from './components/TrailerModal.tsx';
@@ -12,9 +13,11 @@ import { ProfilePage } from './views/ProfilePage.tsx';
 import { AdminPage } from './views/AdminPage.tsx';
 import { GenresPage } from './views/GenresPage.tsx';
 import { MovieItem } from './lib/api.ts';
+import { recordRecentlyViewedId } from './lib/recentlyViewed.ts';
 import { Film, Heart, Shield, Star, Sparkles, Compass } from 'lucide-react';
 
 function AppContent() {
+  const { isLight } = useTheme();
   const [currentView, setCurrentView] = useState<string>('home');
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [movieFilters, setMovieFilters] = useState<{ search?: string; genre?: string; language?: string; sort?: string }>({});
@@ -30,7 +33,9 @@ function AppContent() {
       const id = typeof data === 'object' && data !== null 
         ? Number(data.movieId ?? data.id ?? 1) 
         : Number(data || 1);
-      setSelectedMovieId(isNaN(id) ? 1 : id);
+      const safeId = isNaN(id) ? 1 : id;
+      setSelectedMovieId(safeId);
+      recordRecentlyViewedId(safeId);
       setCurrentView('movie-details');
     } else if (view === 'top-rated') {
       setMovieFilters({ sort: 'rating' });
@@ -42,7 +47,9 @@ function AppContent() {
 
   const handleSelectMovie = (id: number | string) => {
     const numId = Number(id);
-    setSelectedMovieId(isNaN(numId) ? 1 : numId);
+    const safeId = isNaN(numId) ? 1 : numId;
+    setSelectedMovieId(safeId);
+    recordRecentlyViewedId(safeId);
     setCurrentView('movie-details');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -52,7 +59,11 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f17] text-slate-100 font-sans selection:bg-amber-500 selection:text-black">
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+      isLight 
+        ? 'bg-[#f8fafc] text-slate-900 selection:bg-amber-400 selection:text-black' 
+        : 'bg-[#0b0f17] text-slate-100 selection:bg-amber-500 selection:text-black'
+    }`}>
       {/* Top Navbar */}
       <Navbar
         currentView={currentView}
@@ -212,10 +223,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

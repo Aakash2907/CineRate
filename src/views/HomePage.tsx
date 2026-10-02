@@ -10,8 +10,12 @@ import {
   Clock,
   Compass,
   Search,
+  History,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { MovieItem, api } from '../lib/api.ts';
+import { useRecentlyViewed } from '../lib/recentlyViewed.ts';
 import { MovieCard } from '../components/MovieCard.tsx';
 import { RatingStars } from '../components/RatingStars.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
@@ -30,6 +34,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   const { user, openAuthModal, refreshUser } = useAuth();
   const { toast } = useToast();
+  const { recentlyViewed, clearHistory, removeMovie } = useRecentlyViewed();
 
   const [featuredMovies, setFeaturedMovies] = useState<MovieItem[]>([]);
   const [popularMovies, setPopularMovies] = useState<MovieItem[]>([]);
@@ -271,6 +276,99 @@ export const HomePage: React.FC<HomePageProps> = ({
           </form>
         </div>
       </section>
+
+      {/* ========================================================
+          RECENTLY VIEWED SECTION (Last 5 clicked in current session)
+      ======================================================== */}
+      {recentlyViewed.length > 0 ? (
+        <section className="space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                <History className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-heading text-2xl font-bold text-white">Recently Viewed</h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                    {recentlyViewed.length} of 5 in Session
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">The last 5 movies you clicked and explored during this visit</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                clearHistory();
+                toast('Recently viewed history cleared for this session', 'info');
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500/40 text-xs font-semibold text-slate-400 hover:text-rose-300 transition-all active:scale-95 cursor-pointer"
+              title="Clear session viewing history"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear History</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
+            {recentlyViewed.map((movie, index) => (
+              <div key={movie.id} className="relative group/recent">
+                {/* Visual Position Badge */}
+                <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold shadow-md backdrop-blur-md ${
+                    index === 0
+                      ? 'bg-amber-500 text-slate-950 ring-1 ring-amber-300'
+                      : 'bg-slate-900/90 text-slate-300 border border-slate-700/80'
+                  }`}>
+                    {index === 0 ? '★ Latest' : `#${index + 1}`}
+                  </span>
+                </div>
+
+                {/* Quick Remove from Session Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeMovie(movie.id);
+                  }}
+                  className="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-slate-950/85 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700 flex items-center justify-center opacity-0 group-hover/recent:opacity-100 transition-all duration-200 shadow-xl cursor-pointer"
+                  title="Remove from recently viewed"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+
+                <MovieCard
+                  movie={movie}
+                  onSelect={onSelectMovie}
+                  onPlayTrailer={onPlayTrailer}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="p-4 sm:p-5 rounded-2xl bg-slate-900/40 border border-slate-800/80 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-800/60 text-slate-400 flex items-center justify-center border border-slate-700/40">
+              <History className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-200">Recently Viewed</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60">0/5</span>
+              </div>
+              <p className="text-xs text-slate-400">Click on any film below to track your last 5 viewed titles during this session.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('movies', { sort: 'popular' })}
+            className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+          >
+            <span>Start Exploring</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </section>
+      )}
 
       {/* ========================================================
           POPULAR MOVIES SECTION

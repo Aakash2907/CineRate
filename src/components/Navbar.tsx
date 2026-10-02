@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { api, MovieItem } from '../lib/api.ts';
+import { ThemeToggle } from './ThemeToggle.tsx';
 
 interface NavbarProps {
   currentView: string;
@@ -248,6 +249,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onSearc
 
         {/* Right Action: Auth & Profile */}
         <div className="flex items-center gap-2.5">
+          <ThemeToggle variant="navbar" />
+
           {user ? (
             <div ref={userDropdownRef} className="relative">
               <button
@@ -394,6 +397,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onSearc
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-800/80 bg-slate-950 p-4 space-y-3 animate-in slide-in-from-top-4 duration-200">
+          {/* Theme Toggle (Mobile) */}
+          <ThemeToggle variant="mobile" />
+
           {/* Mobile Search input */}
           <form onSubmit={handleSearchSubmit}>
             <div className="relative">

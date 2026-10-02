@@ -92,7 +92,7 @@ interface LocalStore {
   };
 }
 
-const localStore: LocalStore = {
+export const localStore: LocalStore = {
   users: [],
   movies: [],
   ratings: [],

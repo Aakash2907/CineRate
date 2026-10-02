@@ -21,7 +21,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const { user, openAuthModal, refreshUser } = useAuth();
   const { toast } = useToast();
-  const [inWatchlist, setInWatchlist] = useState<boolean>(Boolean(movie.in_watchlist));
+  const [inWatchlist, setInWatchlist] = useState<boolean>(
+    Boolean(movie.in_watchlist) || api.watchlist.isSavedLocally(movie.id)
+  );
   const [isUpdatingWatchlist, setIsUpdatingWatchlist] = useState<boolean>(false);
   const [imgError, setImgError] = useState<boolean>(false);
 

@@ -48,12 +48,19 @@ export interface ReviewItem {
 }
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  let token: string | null = null;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('cinerate_auth_token');
+  }
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   let res: Response;
   try {
     res = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...options?.headers,
       },
       credentials: 'include', // Includes HTTP-only cookies
@@ -184,6 +191,7 @@ export const api = {
         });
         if (res && res.user) {
           localStorage.setItem('cinerate_local_user', JSON.stringify(res.user));
+          if (res.token) localStorage.setItem('cinerate_auth_token', res.token);
           return res;
         }
       } catch (err: any) {
@@ -207,6 +215,7 @@ export const api = {
         ratings_count: 0,
       };
       localStorage.setItem('cinerate_local_user', JSON.stringify(localUser));
+      localStorage.setItem('cinerate_auth_token', 'cinerate_resilient_token');
       return {
         message: 'Account created successfully.',
         user: localUser,
@@ -222,6 +231,7 @@ export const api = {
         });
         if (res && res.user) {
           localStorage.setItem('cinerate_local_user', JSON.stringify(res.user));
+          if (res.token) localStorage.setItem('cinerate_auth_token', res.token);
           return res;
         }
       } catch (err: any) {
@@ -237,6 +247,7 @@ export const api = {
         try {
           const parsed = JSON.parse(saved) as UserProfile;
           if (parsed.email.toLowerCase() === payload.email.toLowerCase()) {
+            localStorage.setItem('cinerate_auth_token', 'cinerate_resilient_token');
             return { message: 'Signed in successfully.', user: parsed, token: 'cinerate_resilient_token' };
           }
         } catch {}
@@ -255,6 +266,7 @@ export const api = {
           ratings_count: 12,
         };
         localStorage.setItem('cinerate_local_user', JSON.stringify(adminUser));
+        localStorage.setItem('cinerate_auth_token', 'cinerate_resilient_token');
         return { message: 'Signed in successfully.', user: adminUser, token: 'cinerate_resilient_token' };
       }
 
@@ -270,6 +282,7 @@ export const api = {
         ratings_count: 0,
       };
       localStorage.setItem('cinerate_local_user', JSON.stringify(fallbackUser));
+      localStorage.setItem('cinerate_auth_token', 'cinerate_resilient_token');
       return { message: 'Signed in successfully.', user: fallbackUser, token: 'cinerate_resilient_token' };
     },
 
@@ -280,6 +293,7 @@ export const api = {
         });
       } catch {}
       localStorage.removeItem('cinerate_local_user');
+      localStorage.removeItem('cinerate_auth_token');
       return { message: 'Signed out successfully.' };
     },
 
@@ -366,7 +380,7 @@ export const api = {
             return {
               movie: {
                 ...res.movie,
-                in_watchlist: Boolean(res.movie.in_watchlist),
+                in_watchlist: Boolean(res.movie.in_watchlist) || api.watchlist.isSavedLocally(numId),
               },
               reviews: Array.isArray(res.reviews) ? res.reviews : [],
             };
@@ -383,7 +397,7 @@ export const api = {
           ...local,
           created_at: new Date(2024, 0, 1 + (Number(local.id) % 300)).toISOString(),
           reviews_count: 5,
-          in_watchlist: false,
+          in_watchlist: api.watchlist.isSavedLocally(Number(local.id)),
         },
         reviews: [
           {
@@ -457,51 +471,255 @@ export const api = {
 
   reviews: {
     async list(movieId?: number) {
-      const url = movieId ? `/api/reviews?movieId=${movieId}` : '/api/reviews';
-      return fetchJson<{ reviews: ReviewItem[] }>(url);
+      let serverReviews: ReviewItem[] = [];
+      try {
+        const url = movieId ? `/api/reviews?movieId=${movieId}` : '/api/reviews';
+        const res = await fetchJson<{ reviews: ReviewItem[] }>(url);
+        if (res && Array.isArray(res.reviews)) {
+          serverReviews = res.reviews;
+        }
+      } catch (err) {
+        console.warn('Backend list reviews fallback:', err);
+      }
+
+      // Merge local reviews
+      let localReviews: ReviewItem[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_reviews');
+          if (raw) localReviews = JSON.parse(raw);
+        } catch {}
+      }
+
+      const matchingLocal = movieId ? localReviews.filter((r) => Number(r.movie_id) === Number(movieId)) : localReviews;
+      const seenIds = new Set(serverReviews.map((r) => r.id));
+      const combined = [...matchingLocal.filter((r) => !seenIds.has(r.id)), ...serverReviews];
+      return { reviews: combined };
     },
 
     async create(movieId: number, reviewText: string) {
-      return fetchJson<{ message: string; review: ReviewItem }>('/api/reviews', {
-        method: 'POST',
-        body: JSON.stringify({ movieId, reviewText }),
-      });
+      const numId = Number(movieId);
+      let createdReview: ReviewItem | null = null;
+
+      try {
+        const res = await fetchJson<{ message: string; review: ReviewItem }>('/api/reviews', {
+          method: 'POST',
+          body: JSON.stringify({ movieId: numId, reviewText: reviewText.trim() }),
+        });
+        if (res && res.review) {
+          createdReview = res.review;
+        }
+      } catch (err) {
+        console.warn('Backend create review fallback:', err);
+      }
+
+      if (!createdReview) {
+        let userName = 'Movie Lover';
+        let userId = 1;
+        if (typeof window !== 'undefined') {
+          try {
+            const rawUser = localStorage.getItem('cinerate_local_user');
+            if (rawUser) {
+              const u = JSON.parse(rawUser);
+              userName = u.name || userName;
+              userId = u.id || userId;
+            }
+          } catch {}
+        }
+        const movieObj = MOVIES_DATASET.find((m) => Number(m.id) === numId);
+        createdReview = {
+          id: Date.now(),
+          user_id: userId,
+          movie_id: numId,
+          review_text: reviewText.trim(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          user_name: userName,
+          movie_title: movieObj?.title || 'Film',
+          movie_poster: movieObj?.poster_url || '',
+          user_rating: 5,
+        };
+      }
+
+      // Store in local reviews cache
+      if (typeof window !== 'undefined' && createdReview) {
+        try {
+          const raw = localStorage.getItem('cinerate_local_reviews');
+          const list: ReviewItem[] = raw ? JSON.parse(raw) : [];
+          localStorage.setItem('cinerate_local_reviews', JSON.stringify([createdReview, ...list.filter((r) => r.id !== createdReview!.id)]));
+        } catch {}
+      }
+
+      return {
+        message: 'Review posted successfully.',
+        review: createdReview,
+      };
     },
 
     async update(id: number, reviewText: string) {
-      return fetchJson<{ message: string; review: ReviewItem }>(`/api/reviews/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ reviewText }),
-      });
+      try {
+        return await fetchJson<{ message: string; review: ReviewItem }>(`/api/reviews/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ reviewText }),
+        });
+      } catch (err) {
+        if (typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('cinerate_local_reviews');
+            if (raw) {
+              const list: ReviewItem[] = JSON.parse(raw);
+              const target = list.find((r) => r.id === id);
+              if (target) {
+                target.review_text = reviewText.trim();
+                target.updated_at = new Date().toISOString();
+                localStorage.setItem('cinerate_local_reviews', JSON.stringify(list));
+                return { message: 'Review updated successfully.', review: target };
+              }
+            }
+          } catch {}
+        }
+        throw err;
+      }
     },
 
     async delete(id: number) {
-      return fetchJson<{ message: string }>(`/api/reviews/${id}`, {
-        method: 'DELETE',
-      });
+      try {
+        await fetchJson<{ message: string }>(`/api/reviews/${id}`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.warn('Backend delete review fallback:', err);
+      }
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_reviews');
+          if (raw) {
+            const list: ReviewItem[] = JSON.parse(raw);
+            localStorage.setItem('cinerate_local_reviews', JSON.stringify(list.filter((r) => r.id !== id)));
+          }
+        } catch {}
+      }
+      return { message: 'Review deleted successfully.' };
     },
 
     async getMyReviews() {
-      return fetchJson<{ reviews: ReviewItem[] }>('/api/reviews/me');
+      try {
+        const res = await fetchJson<{ reviews: ReviewItem[] }>('/api/reviews/me');
+        if (res && Array.isArray(res.reviews)) return res;
+      } catch (err) {
+        console.warn('Backend get my reviews fallback:', err);
+      }
+      let localReviews: ReviewItem[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_reviews');
+          if (raw) localReviews = JSON.parse(raw);
+        } catch {}
+      }
+      return { reviews: localReviews };
     },
   },
 
   watchlist: {
     async get() {
-      return fetchJson<{ watchlist: MovieItem[] }>('/api/watchlist');
+      let serverWatchlist: MovieItem[] = [];
+      try {
+        const res = await fetchJson<{ watchlist: MovieItem[] }>('/api/watchlist');
+        if (res && Array.isArray(res.watchlist)) {
+          serverWatchlist = res.watchlist;
+          if (typeof window !== 'undefined') {
+            const ids = serverWatchlist.map((m) => Number(m.id));
+            localStorage.setItem('cinerate_local_watchlist_ids', JSON.stringify(ids));
+          }
+          return res;
+        }
+      } catch (err) {
+        console.warn('Backend watchlist fetch fallback:', err);
+      }
+
+      // Local fallback
+      let ids: number[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_watchlist_ids');
+          if (raw) ids = JSON.parse(raw);
+        } catch {}
+      }
+
+      const list = ids
+        .map((id) => {
+          const found = MOVIES_DATASET.find((m) => Number(m.id) === Number(id));
+          if (found) {
+            return {
+              ...found,
+              created_at: new Date().toISOString(),
+              reviews_count: 5,
+              in_watchlist: true,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean) as MovieItem[];
+
+      return { watchlist: list };
     },
 
     async add(movieId: number) {
-      return fetchJson<{ message: string; in_watchlist: boolean }>('/api/watchlist', {
-        method: 'POST',
-        body: JSON.stringify({ movieId }),
-      });
+      const numId = Number(movieId);
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_watchlist_ids');
+          const ids: number[] = raw ? JSON.parse(raw) : [];
+          if (!ids.includes(numId)) {
+            ids.push(numId);
+            localStorage.setItem('cinerate_local_watchlist_ids', JSON.stringify(ids));
+          }
+        } catch {}
+      }
+
+      try {
+        return await fetchJson<{ message: string; in_watchlist: boolean }>('/api/watchlist', {
+          method: 'POST',
+          body: JSON.stringify({ movieId: numId }),
+        });
+      } catch (err) {
+        console.warn('Backend watchlist add fallback:', err);
+        return { message: 'Movie added to your watchlist.', in_watchlist: true };
+      }
     },
 
     async remove(movieId: number) {
-      return fetchJson<{ message: string; in_watchlist: boolean }>(`/api/watchlist/${movieId}`, {
-        method: 'DELETE',
-      });
+      const numId = Number(movieId);
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('cinerate_local_watchlist_ids');
+          if (raw) {
+            const ids: number[] = JSON.parse(raw);
+            localStorage.setItem('cinerate_local_watchlist_ids', JSON.stringify(ids.filter((id) => id !== numId)));
+          }
+        } catch {}
+      }
+
+      try {
+        return await fetchJson<{ message: string; in_watchlist: boolean }>(`/api/watchlist/${numId}`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.warn('Backend watchlist remove fallback:', err);
+        return { message: 'Movie removed from your watchlist.', in_watchlist: false };
+      }
+    },
+
+    isSavedLocally(movieId: number): boolean {
+      if (typeof window === 'undefined') return false;
+      try {
+        const raw = localStorage.getItem('cinerate_local_watchlist_ids');
+        if (raw) {
+          const ids: number[] = JSON.parse(raw);
+          return ids.includes(Number(movieId));
+        }
+      } catch {}
+      return false;
     },
   },
 

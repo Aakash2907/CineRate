@@ -520,8 +520,8 @@ apiRouter.post('/reviews', requireAuth, async (req: AuthRequest, res: Response) 
     if (!reviewText || !reviewText.trim()) {
       return res.status(400).json({ error: 'Review text cannot be empty.' });
     }
-    if (reviewText.trim().length < 10) {
-      return res.status(400).json({ error: 'Review should be at least 10 characters long.' });
+    if (reviewText.trim().length < 3) {
+      return res.status(400).json({ error: 'Review should be at least 3 characters long.' });
     }
 
     const movie = await getMovieById(mId);

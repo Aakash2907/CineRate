@@ -17,6 +17,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { MovieItem, ReviewItem, api } from '../lib/api.ts';
+import { recordRecentlyViewedMovie } from '../lib/recentlyViewed.ts';
 import { RatingStars } from '../components/RatingStars.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useToast } from '../context/ToastContext.tsx';
@@ -68,6 +69,7 @@ export const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({
         return;
       }
       setMovie(data.movie);
+      recordRecentlyViewedMovie(data.movie);
       setReviews(Array.isArray(data.reviews) ? data.reviews : []);
       setInWatchlist(Boolean(data.movie?.in_watchlist));
       if (data.movie?.user_rating) {
